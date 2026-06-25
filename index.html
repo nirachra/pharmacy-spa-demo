@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Health and Spa (คณะเภสัชศาสตร์ มข.) - จองคิวและแสดงคิวออนไลน์</title>
+    <meta name="description" content="ระบบจองคิวนวดและแสดงข้อมูลคิวออนไลน์ Pharmacy Health and Spa คณะเภสัชศาสตร์ มหาวิทยาลัยขอนแก่น สัมผัสประสบการณ์นวดแผนไทยเพื่อสุขภาพและการดูแลสุขภาพแบบองค์รวม">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="header-container">
+            <a href="#" class="logo-area" onclick="navigateTo('booking')">
+                <span class="logo-icon"><i data-lucide="flower-2"></i></span>
+                <div class="logo-text">
+                    <h1>Pharmacy Health & Spa</h1>
+                    <p>FACULTY OF PHARMACEUTICAL SCIENCES, KKU</p>
+                </div>
+            </a>
+            <nav class="nav-menu" id="nav-menu">
+                <a href="#booking" class="nav-link active" onclick="navigateTo('booking', event)" id="nav-booking">จองคิวออนไลน์</a>
+                <a href="#admin" class="nav-link nav-admin-btn" onclick="navigateTo('admin', event)" id="nav-admin">
+                    <i data-lucide="sliders" class="icon-sm"></i> จัดการร้าน
+                </a>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="เมนู">
+                <i data-lucide="menu" id="menu-icon"></i>
+            </button>
+        </div>
+    </header>
+    <!-- stub for top-status-bar (removed) -->
+    <div style="display:none"><span id="top-queue-status"></span></div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <main class="content-wrapper">
+        <!-- HOME/SERVICES removed - stubs below for JS compat -->
+        <section id="sect-home" class="spa-section" style="display:none">
+            <div class="hero-banner" style="background-image: linear-gradient(rgba(44, 34, 23, 0.7), rgba(44, 34, 23, 0.85)), url('images/spa_hero.jpg');">
+                <div class="hero-content">
+                    <span class="hero-subtitle">FACULTY OF PHARMACEUTICAL SCIENCES, KKU</span>
+                    <h2 class="hero-title">Pharmacy Health & Spa</h2>
+                    <p class="hero-description">สัมผัสศาสตร์แห่งการดูแลสุขภาพและการผ่อนคลายร่างกายอย่างถูกวิธี ภายใต้คณะเภสัชศาสตร์ มหาวิทยาลัยขอนแก่น บริการนวดแผนไทย (รอบละ 1 ชม. 30 นาที เพียง 350 บาท) ข้าราชการสามารถเบิกจ่ายตรงจ่ายส่วนต่างเพียง 100 บาทเท่านั้น</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-lg" onclick="navigateTo('booking')">
+                            <i data-lucide="calendar-check"></i> จองคิวใช้บริการ
+                        </button>
+                        <button class="btn btn-secondary btn-lg" onclick="navigateTo('queue')">
+                            <i data-lucide="activity"></i> ตรวจสอบคิวสดออนไลน์
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spa Stats -->
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-serving">2 ท่าน</h3>
+                            <p>กำลังใช้บริการ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="hourglass"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-waiting">3 คิว</h3>
+                            <p>คิวรอรับบริการ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="clock-3"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-waittime">~20 นาที</h3>
+                            <p>เวลารอเฉลี่ย</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="smile"></i></div>
+                        <div class="stat-info">
+                            <h3>99%</h3>
+                            <p>ความพึงพอใจ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BOOKING SECTION ================= -->
+        <section id="sect-booking" class="spa-section active">
+            <div class="container container-sm">
+
+                <!-- Step Indicator (2 steps) -->
+                <div class="booking-steps">
+                    <div class="bstep active" id="bstep-1"><span class="bstep-num">1</span><span class="bstep-lbl">เลือกวัน+รอบ</span></div>
+                    <div class="bstep-line"></div>
+                    <div class="bstep" id="bstep-2"><span class="bstep-num">2</span><span class="bstep-lbl">กรอกข้อมูล</span></div>
+                </div>
+
+                <!-- STEP 1: Calendar + Inline Day Table -->
+                <div id="booking-step-1" class="glass-card">
+                    <div class="card-header text-center">
+                        <i data-lucide="calendar" class="card-title-icon"></i>
+                        <h2>เลือกวันที่ต้องการจอง</h2>
+                        <p>คลิกวันที่เพื่อดูรอบว่างและเลือกหมอนวด</p>
+                    </div>
+                    <div class="monthly-cal-header">
+                        <button class="btn btn-outline btn-sm" onclick="changeBookMonth(-1)">&#8249;</button>
+                        <h3 id="book-cal-month-label" class="monthly-cal-title"></h3>
+                        <button class="btn btn-outline btn-sm" onclick="changeBookMonth(1)">&#8250;</button>
+                    </div>
+                    <div class="monthly-cal-grid" id="book-cal-grid"></div>
+
+                    <!-- Inline Day Table (shown after date click) -->
+                    <div id="booking-day-table" class="hidden" style="margin-top:20px; border-top:1px solid var(--color-border); padding-top:16px;">
+                        <div style="margin-bottom:10px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <h3 id="day-table-date-label" style="margin:0; font-size:1rem; color:var(--color-primary-dark);"></h3>
+                            <p style="margin:0; font-size:0.8rem; color:#888;">คลิกช่อง <span style="color:#1a7a30;font-weight:600;">สีเขียว (ว่าง)</span> เพื่อเลือกรอบ + หมอนวด</p>
+                        </div>
+                        <div class="slot-table-wrap">
+                            <table class="slot-table" id="slot-table">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Booking Form -->
+                <div id="booking-step-2" class="glass-card hidden">
+                    <div class="card-header">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <button class="btn btn-outline btn-sm" onclick="backToStep1()">&#8592; เปลี่ยนรอบ</button>
+                            <div>
+                                <h2 style="margin:0">กรอกข้อมูลการจอง</h2>
+                                <p style="margin:0;font-size:0.85rem;" id="step3-summary-label"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="booking-form" onsubmit="handleBookingSubmit(event)">
+                        <input type="hidden" id="book-date">
+                        <input type="hidden" id="book-time">
+
+                        <!-- Customer Name -->
+                        <div class="form-group">
+                            <label for="book-name"><i data-lucide="user" class="icon-input"></i> ชื่อผู้รับบริการ <span class="required">*</span></label>
+                            <input type="text" id="book-name" required placeholder="ระบุชื่อ-นามสกุล">
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="form-group">
+                            <label for="book-phone"><i data-lucide="phone" class="icon-input"></i> เบอร์โทรศัพท์ <span class="required">*</span></label>
+                            <input type="tel" id="book-phone" required pattern="[0-9\-+]{9,15}" placeholder="เช่น 0657477878">
+                        </div>
+
+                        <!-- Service -->
+                        <div class="form-group">
+                            <label for="book-service"><i data-lucide="activity" class="icon-input"></i> เลือกบริการ <span class="required">*</span></label>
+                            <select id="book-service" required onchange="onServiceOrBenefitChange()">
+                                <option value="Thai Massage" selected>นวดแผนไทยเพื่อสุขภาพและแก้อาการ (90 นาที - ฿350)</option>
+                                <option value="Herbal Massage">นวดประคบสมุนไพรสด (90 นาที - ฿450)</option>
+                                <option value="Foot Massage">นวดฝ่าเท้ากระตุ้นจุดสะท้อน (90 นาที - ฿350)</option>
+                            </select>
+                        </div>
+
+                        <!-- Benefit -->
+                        <div class="form-group">
+                            <label><i data-lucide="wallet" class="icon-input"></i> สิทธิ์การชำระเงิน</label>
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="book-benefit" value="General" checked onchange="onServiceOrBenefitChange()">
+                                    <span>บุคคลทั่วไป (ชำระเต็มจำนวน)</span>
+                                </label>
+                                <label id="gov-benefit-option-container">
+                                    <input type="radio" name="book-benefit" value="Government" onchange="onServiceOrBenefitChange()">
+                                    <span>ข้าราชการ (จ่ายตรง *ชำระส่วนต่าง 100 บาท*)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Therapist -->
+                        <div class="form-group">
+                            <label for="book-therapist"><i data-lucide="heart" class="icon-input"></i> เลือกพนักงานนวด</label>
+                            <select id="book-therapist">
+                                <option value="Random">พนักงานใดก็ได้ (สุ่มคิวว่าง)</option>
+                                <option value="tu">น.ส.วิชุดา รังกา (ตู่)</option>
+                                <option value="ning">น.ส.อมรรัตน์ ธนภูมิชัย (หนิง)</option>
+                                <option value="moo">นายอำนาจ คมขำ (หมู)</option>
+                                <option value="liu">นางอุดมศรี จันทจร (หลิว)</option>
+                                <option value="jiab">น.ส.นฤมล ทองหล่อ (เจี๊ยบ)</option>
+                                <option value="on">น.ส.รัสมี รสหานาม (อ้อน)</option>
+                                <option value="yu">น.ส.ยุพาพร พุ้ยมอม (ยุ)</option>
+                                <option value="oi">นางสุมาลี พุฒซ้อน (อ้อย)</option>
+                                <option value="jim">น.ส.ปาริยา โคตะมูล (จิ๋ม)</option>
+                                <option value="tim">นางพรพิมล ขวดคำ (ติ๋ม)</option>
+                                <option value="pong">น.ส.ฐาปณีย์ อุตรนคร (ผ่อง)</option>
+                                <option value="dao">น.ส.ปุญญิสา พิมที (ดาว)</option>
+                                <option value="roj">น.ส.รจนา จันปัญญา (รจ)</option>
+                                <option value="maem">น.ส.ปภัสสร กลางเหลือง (แหม่ม)</option>
+                            </select>
+                        </div>
+
+                        <!-- Note -->
+                        <div class="form-group">
+                            <label for="book-note"><i data-lucide="message-square" class="icon-input"></i> หมายเหตุ / อาการที่ต้องการเน้น</label>
+                            <textarea id="book-note" rows="3" placeholder="เช่น ขอเน้นนวดบ่าไหล่ปวดตึง"></textarea>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="price-display-box">
+                            <span><i data-lucide="coins" class="text-accent inline"></i> ค่าบริการประมาณการ:</span>
+                            <strong id="estimated-price">฿350</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full btn-lg margin-top-lg">
+                            <i data-lucide="check-circle-2"></i> ยืนยันการจองคิว
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Receipt Popup / Success Modal -->
+                <div id="booking-success-modal" class="modal">
+                    <div class="modal-content receipt-card">
+                        <div class="receipt-header">
+                            <span class="success-icon"><i data-lucide="badge-check"></i></span>
+                            <h3>จองคิวสำเร็จ!</h3>
+                            <p>Pharmacy Health and Spa ยินดีต้อนรับท่าน</p>
+                        </div>
+                        <div class="receipt-divider"></div>
+                        <div class="receipt-body">
+                            <div class="ticket-badge">
+                                <span class="ticket-label">หมายเลขคิวของคุณ</span>
+                                <span class="ticket-number" id="ticket-number">A07</span>
+                            </div>
+                            <div class="receipt-details">
+                                <div class="detail-row">
+                                    <span>ชื่อผู้จอง:</span>
+                                    <strong id="receipt-name">กิตติพงษ์ ใจเย็น</strong>
+                                </div>
+                                <div class="detail-row">
+                                    <span>เบอร์โทร:</span>
+                                    <span id="receipt-phone">089-xxx-xxxx</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>คอร์สนวด:</span>
+                                    <strong id="receipt-service">นวดแผนไทยเพื่อสุขภาพและแก้อาการ</strong>
+                                </div>
+                                <div class="detail-row">
+                                    <span>รอบบริการ:</span>
+                                    <strong id="receipt-time">รอบที่ 1 (09:00 - 10:30 น.)</strong>
+                                </div>
+                                <div class="detail-row">
+                                    <span>ระยะเวลา:</span>
+                                    <span id="receipt-duration">90 นาที</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>พนักงานนวด:</span>
+                                    <span id="receipt-therapist">พี่วรรณ</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>วันที่รับบริการ:</span>
+                                    <strong id="receipt-datetime">25 มิ.ย. 2026</strong>
+                                </div>
+                                <div class="detail-row">
+                                    <span>สิทธิ์ชำระเงิน:</span>
+                                    <span id="receipt-benefit" class="text-success">บุคคลทั่วไป</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>ค่าบริการเต็ม:</span>
+                                    <strong id="receipt-price" class="text-accent">฿350</strong>
+                                </div>
+                            </div>
+                            <div class="receipt-info-box">
+                                <i data-lucide="info" class="icon-sm text-accent"></i>
+                                <span>กรุณามาถึงก่อนเวลานัดหมาย 10 นาที เพื่อเตรียมตัว หากมาช้ากว่ารอบบริการเกิน 15 นาที ระบบจะยกเลิกสิทธิ์รอบนั้นโดยอัตโนมัติ</span>
+                            </div>
+                        </div>
+                        <div class="receipt-divider"></div>
+                        <div class="receipt-footer">
+                            <button class="btn btn-primary" onclick="closeSuccessModal(); navigateTo('booking');">
+                                <i data-lucide="calendar-check"></i> จองคิวอีกครั้ง
+                            </button>
+                            <button class="btn btn-outline" onclick="closeSuccessModal()">ปิดหน้าต่างนี้</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= LIVE QUEUE SECTION (hidden - removed) ================= -->
+        <section id="sect-queue" class="spa-section" style="display:none">
+            <div class="container">
+
+                <!-- Real-time Queue Board Widgets -->
+                <div class="queue-overview-grid">
+                    <!-- Now Serving Card -->
+                    <div class="queue-board-card serving-highlight">
+                        <div class="board-badge">NOW SERVING</div>
+                        <div class="board-content">
+                            <span class="board-label">คิวที่กำลังรับบริการอยู่</span>
+                            <div class="active-queues-container" id="now-serving-list">
+                                <!-- Populated dynamically -->
+                                <span class="active-queue-chip">A01</span>
+                                <span class="active-queue-chip">A02</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Up Card -->
+                    <div class="queue-board-card waiting-highlight">
+                        <div class="board-badge font-secondary">NEXT QUEUE</div>
+                        <div class="board-content">
+                            <span class="board-label">คิวรอถัดไปที่กำลังเรียก</span>
+                            <div class="active-queues-container" id="next-serving-list">
+                                <!-- Populated dynamically -->
+                                <span class="active-queue-chip pulse">A03</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Waiting Summary Card -->
+                    <div class="queue-board-card summary-card">
+                        <div class="board-info-row">
+                            <div class="info-cell">
+                                <span class="cell-label">คิวรอทั้งหมด</span>
+                                <span class="cell-val text-primary" id="board-waiting-count">4 คิว</span>
+                            </div>
+                            <div class="info-cell">
+                                <span class="cell-label">รอเวลาประมาณ</span>
+                                <span class="cell-val text-accent" id="board-waiting-time">~30 นาที</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Queue Search Tool -->
+                <div class="search-queue-box glass-card">
+                    <div class="search-header">
+                        <h3><i data-lucide="search" class="icon-title"></i> ค้นหาบัตรคิวและสถานะของคุณ</h3>
+                        <p>ป้อนเบอร์โทรศัพท์ของคุณที่ลงทะเบียนจอง เพื่อค้นหาประวัติคิวและดูสถานะโดยละเอียด</p>
+                    </div>
+                    <div class="search-form">
+                        <div class="search-input-group">
+                            <i data-lucide="phone" class="search-icon-inside"></i>
+                            <input type="tel" id="search-phone-input" placeholder="ระบุเบอร์โทรศัพท์ (เช่น 0657477878)">
+                            <button class="btn btn-primary" onclick="searchQueue()">ค้นหา</button>
+                        </div>
+                    </div>
+                    <!-- Search Results Area -->
+                    <div id="search-result-area" class="search-result-container hidden">
+                        <!-- Custom content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Monthly Calendar -->
+                <div class="monthly-cal-wrap glass-card">
+                    <div class="monthly-cal-header">
+                        <button class="btn btn-outline btn-sm" onclick="changeMonth(-1)">&#8249;</button>
+                        <h3 id="cal-month-label" class="monthly-cal-title"></h3>
+                        <button class="btn btn-outline btn-sm" onclick="changeMonth(1)">&#8250;</button>
+                    </div>
+                    <div class="monthly-cal-grid" id="monthly-cal-grid"><!-- js --></div>
+                </div>
+
+                <!-- Day Detail Panel -->
+                <div id="day-detail-panel" class="day-detail-panel hidden">
+                    <div class="day-detail-header">
+                        <h3 id="day-detail-title"></h3>
+                        <button class="btn btn-outline btn-sm" onclick="closeDayDetail()">✕ ปิด</button>
+                    </div>
+                    <div class="day-schedule-grid" id="day-schedule-grid"><!-- js --></div>
+                </div>
+
+                <!-- hidden elements kept for JS compatibility -->
+                <div style="display:none">
+                    <div id="col-list-waiting"></div>
+                    <div id="col-list-serving"></div>
+                    <div id="col-list-completed"></div>
+                    <span id="badge-count-waiting"></span>
+                    <span id="badge-count-serving"></span>
+                    <span id="badge-count-completed"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN SIMULATOR SECTION ================= -->
+        <section id="sect-admin" class="spa-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-subtitle">SPA RECEPTION CONSOLE</span>
+                    <h2 class="section-title">เครื่องมือจัดการคิวสำหรับร้านค้า (เจ้าหน้าที่)</h2>
+                    <p class="section-desc">จำลองการเรียกคิวและควบคุมคิวสปา เพื่อทดสอบการอัปเดตของกระดานออนไลน์</p>
+                </div>
+
+                <!-- ===== Quota Tracking Section ===== -->
+                <div class="glass-card" style="margin-bottom:24px;">
+                    <div class="card-header">
+                        <h3><i data-lucide="coins"></i> โควต้าค่าตอบแทนประจำรอบ</h3>
+                        <p>รอบ: <strong>21 มิ.ย. – 20 ก.ค. 2569</strong> &nbsp;|&nbsp; อัตรา: นวดแผนไทย/ฝ่าเท้า <strong>170 บ./ราย</strong> &nbsp;|&nbsp; นวดสมุนไพร <strong>220 บ./ราย</strong></p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table" id="quota-table">
+                            <thead>
+                                <tr>
+                                    <th>พนักงานนวด</th>
+                                    <th style="text-align:center;">ขอไว้ (บาท)</th>
+                                    <th style="text-align:right;">ทำไปแล้ว (บาท)</th>
+                                    <th style="text-align:right;">เหลือโควต้า (บาท)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quota-tbody">
+                                <!-- populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="saveQuotaValues()">
+                            <i data-lucide="save"></i> บันทึกโควต้า
+                        </button>
+                        <span id="quota-save-hint" style="font-size:0.8rem; color:#888;"></span>
+                    </div>
+                </div>
+
+                <!-- Therapist Dashboard -->
+                <div class="therapist-dashboard-wrap glass-card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <h3><i data-lucide="bar-chart-2"></i> สถิติหมอนวดวันนี้</h3>
+                        <p>จำนวนคิวที่แต่ละท่านรับผิดชอบ | <span style="color:var(--color-success)">■ เสร็จ</span> <span style="color:var(--color-accent-gold)">■ กำลังนวด</span> <span style="color:#aaa">■ รอ</span></p>
+                    </div>
+                    <div class="therapist-dashboard" id="therapist-dashboard">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="admin-grid">
+                    <!-- Summary Stats for Admin -->
+                    <div class="admin-stats-card">
+                        <div class="admin-stats-header">
+                            <h4><i data-lucide="trending-up"></i> รายงานสถิติและคิววันนี้</h4>
+                            <span class="system-time" id="system-time">09:00</span>
+                        </div>
+                        <div class="admin-stats-grid">
+                            <div class="astat-box">
+                                <span class="astat-lbl">คิวจองทั้งหมด</span>
+                                <span class="astat-num" id="astat-total">0</span>
+                            </div>
+                            <div class="astat-box">
+                                <span class="astat-lbl">กำลังรอ</span>
+                                <span class="astat-num" id="astat-waiting">0</span>
+                            </div>
+                            <div class="astat-box">
+                                <span class="astat-lbl">กำลังนวด</span>
+                                <span class="astat-num" id="astat-serving">0</span>
+                            </div>
+                            <div class="astat-box">
+                                <span class="astat-lbl">เสร็จสิ้น</span>
+                                <span class="astat-num text-success" id="astat-done">0</span>
+                            </div>
+                        </div>
+                        <div class="admin-actions-bar">
+                            <button class="btn btn-outline btn-sm" onclick="seedMockData()">
+                                <i data-lucide="plus-circle"></i> จำลองคิวตัวอย่าง (+5 คิว)
+                            </button>
+                            <button class="btn btn-danger-outline btn-sm" onclick="clearAllQueues()">
+                                <i data-lucide="trash-2"></i> ล้างข้อมูลคิวทั้งหมด
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Queue Management Control Table -->
+                    <div class="admin-manage-card">
+                        <div class="card-header">
+                            <h3><i data-lucide="list-ordered"></i> รายการคิวรอการจัดการ</h3>
+                            <p>คลิกเลือกการทำงานกับคิวเพื่อจำลองพฤติกรรมหน้าร้าน</p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>คิว</th>
+                                        <th>ชื่อ-เบอร์โทร</th>
+                                        <th>บริการ / รอบเวลา</th>
+                                        <th>พนักงานนวด</th>
+                                        <th>สถานะ</th>
+                                        <th>การทำงาน (Actions)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-queue-tbody">
+                                    <!-- Populated dynamically -->
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">ไม่มีคิวให้จัดการ กดปุ่มด้านล่างเพื่อเพิ่มคิวใหม่หรือจำลองคิวตัวอย่าง</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <span class="footer-logo"><i data-lucide="flower-2"></i> Pharmacy Health & Spa</span>
+                <p>หน่วยบริการสุขภาพและการนวดแผนไทยเพื่อสุขภาพ คณะเภสัชศาสตร์ มหาวิทยาลัยขอนแก่น มุ่งเน้นการส่งเสริมสุขภาพกล้ามเนื้อและผ่อนคลายร่างกายภายใต้มาตรฐานการบำบัดอย่างถูกต้อง</p>
+            </div>
+            <div class="footer-links">
+                <h5>เมนู</h5>
+                <a href="#booking" onclick="navigateTo('booking')">จองคิวออนไลน์</a>
+                <a href="#admin" onclick="navigateTo('admin')">จัดการร้าน</a>
+            </div>
+            <div class="footer-contact">
+                <h5>ติดต่อเรา</h5>
+                <p><i data-lucide="map-pin" class="icon-sm inline"></i> 123 ถนนมะลิวัลย์ ตำบลในเมือง อำเภอเมือง จังหวัดขอนแก่น 40002<br>(คณะเภสัชศาสตร์ มหาวิทยาลัยขอนแก่น ใกล้บึงสีฐาน)</p>
+                <p><i data-lucide="phone" class="icon-sm inline"></i> โทรสำรองคิว: 065-747-7878 หรือ 043-243-816</p>
+                <p><i data-lucide="mail" class="icon-sm inline"></i> อีเมล: pharmacyhealthspa@kku.ac.th</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Pharmacy Health and Spa (Faculty of Pharmaceutical Sciences, Khon Kaen University). สงวนลิขสิทธิ์ทั้งหมด.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
